@@ -87,7 +87,7 @@ func (n *node) SetupNewClient(peerName string, peerAddr string) {
 	if err != nil {
 		log.Fatalf("failed to connect to server (name: %s, addr: %s): %v\n", peerName, peerAddr, err)
 	}
-	defer conn.Close()
+	// defer conn.Close()
 	n.Clients[peerName] = hs.NewHelloServiceClient(conn)
 	reply, err := n.Clients[peerName].SayHello(context.Background(), &hs.HelloRequest{Name: n.Name})
 	if err != nil {
@@ -99,13 +99,11 @@ func (n *node) SetupNewClient(peerName string, peerAddr string) {
 // `GreetToAllNeighbors` greets all the nodes.
 func (n *node) GreetAllNeighbors() {
 	kvpairs, _, err := n.SDKV.List("Node", nil)
-	log.Println(kvpairs)
 	if err != nil {
 		log.Panicln(err)
 		return
 	}
 	for _, kventry := range kvpairs {
-		log.Println(kventry.Key)
 		if kventry.Key == n.Name {
 			// It's me!
 			continue
@@ -113,7 +111,13 @@ func (n *node) GreetAllNeighbors() {
 		if n.Clients[kventry.Key] == nil {
 			log.Println("INFO: new neighbor:", kventry.Key)
 			n.SetupNewClient(kventry.Key, string(kventry.Value))
+			continue
 		}
+		reply, err := n.Clients[kventry.Key].SayHello(context.Background(), &hs.HelloRequest{Name: n.Name})
+		if err != nil {
+			log.Fatalf("could not greet to server (name: %s, addr: %s): %v\n", kventry.Key, kventry.Value, err)
+		}
+		log.Printf("INFO: Greeting from the other node: %s\n", reply.Message)
 	}
 }
 
