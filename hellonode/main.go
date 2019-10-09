@@ -28,7 +28,7 @@ type node struct {
 
 // `SayHello` implements `helloservice.HelloServiceClient` interface.
 func (n *node) SayHello(ctx context.Context, in *hs.HelloRequest) (*hs.HelloReply, error) {
-	return &hs.HelloReply{ Message: "Hello from " + n.Name }, nil
+	return &hs.HelloReply{Message: "Hello from " + n.Name}, nil
 }
 
 // `StartListening` starts listening service.
@@ -132,10 +132,10 @@ func main() {
 	addr := args[1]
 	consul := args[2]
 	me := node{
-		Name: name,
-		Addr: addr,
+		Name:      name,
+		Addr:      addr,
 		SDAddress: consul,
-		Clients: nil,
+		Clients:   nil,
 	}
 	me.Start()
 }
